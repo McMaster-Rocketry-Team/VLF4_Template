@@ -1,4 +1,7 @@
-use embassy_stm32::Config;
+use defmt::info;
+use embassy_stm32::{Config, Peri};
+use embassy_stm32::adc::{Adc, AdcChannel, SampleTime};
+use embassy_stm32::peripherals::{ADC1, PC4};
 use embassy_stm32::rcc::mux::*;
 use embassy_stm32::rcc::*;
 
@@ -61,4 +64,25 @@ pub fn vlf4_clock() -> Config {
     config.rcc.mux.usbsel = Usbsel::PLL3_Q;
 
     config
+}
+
+pub fn verify_revision(adc1: Peri<'_, ADC1>, pc4: Peri<'_, PC4>) {
+    // On r1, PC4 is connected to curr_ref so it should be 2.5V
+    // On r2, PC4 is connected to green led, so it should be 0V
+
+    let mut adc = Adc::new(adc1);
+    adc.set_sample_time(SampleTime::CYCLES387_5);
+    let raw_value = adc.blocking_read(&mut pc4.degrade_adc());
+
+    if raw_value > 20000 {
+        // is r1
+        if cfg!(feature = "vlf4r2") {
+            defmt::panic!("\"vlf4r2\" feature is selected but running on r1")
+        }
+    }else {
+        // is r2
+        if cfg!(feature = "vlf4r1") {
+            defmt::panic!("\"vlf4r1\" feature is selected but running on r2")
+        }
+    }
 }

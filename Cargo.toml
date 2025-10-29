@@ -50,6 +50,16 @@ nalgebra = { version = "0.34.0", default-features = false, features = [
 ] }
 biquad = "0.5.0"
 micromath = "2.1.0"
+embedded-io-async = "0.6.1"
+nmea = { version = "0.7.0", default-features = false, features = [
+    "defmt-03",
+    "GGA",
+    "GLL",
+    "GSA",
+    "GSV",
+    "RMC",
+] }
+chrono = { version = "0.4.26", default-features = false }
 
 [[bin]]
 name = "tilt_template"
@@ -58,8 +68,20 @@ test = false
 bench = false
 
 [[bin]]
+name = "gps_template"
+path = "src/gps_template.rs"
+test = false
+bench = false
+
+[[bin]]
 name = "main_tilt"
 path = "src/solutions/tilt.rs"
+test = false
+bench = false
+
+[[bin]]
+name = "main_gps"
+path = "src/solutions/gps.rs"
 test = false
 bench = false
 

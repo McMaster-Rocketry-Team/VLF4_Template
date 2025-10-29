@@ -86,6 +86,4 @@ async fn imu_task(
 }
 
 #[embassy_executor::task]
-async fn fire_task(mut led: Output<'static>, fire_signal: &'static Signal<NoopRawMutex, ()>) {
-
-}
+async fn fire_task(mut led: Output<'static>, fire_signal: &'static Signal<NoopRawMutex, ()>) {}

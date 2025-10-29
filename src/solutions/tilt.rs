@@ -2,7 +2,7 @@
 #![no_main]
 #![feature(impl_trait_in_assoc_type)]
 
-use crate::clock::vlf4_clock;
+use crate::clock::{verify_revision, vlf4_clock};
 use crate::lsm6dsm::LSM6DSM;
 use biquad::{
     Biquad as _, Coefficients, DirectForm2Transposed, Q_BUTTERWORTH_F32, ToHertz as _, Type,
@@ -35,6 +35,7 @@ mod lsm6dsm;
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
     let p = embassy_stm32::init(vlf4_clock());
+    verify_revision(p.ADC1, p.PC4);
     info!("Hello world");
 
     // red led
