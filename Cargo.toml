@@ -4,7 +4,7 @@ name = "black_pill_template"
 version = "0.1.0"
 
 [features]
-default = ["vlf4r2"]
+default = ["vlf4r1"]
 vlf4r1 = []
 vlf4r2 = []
 
@@ -52,8 +52,8 @@ biquad = "0.5.0"
 micromath = "2.1.0"
 
 [[bin]]
-name = "template"
-path = "src/template.rs"
+name = "tilt_template"
+path = "src/tilt_template.rs"
 test = false
 bench = false
 
