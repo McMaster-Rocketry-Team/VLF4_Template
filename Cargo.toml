@@ -3,6 +3,11 @@ edition = "2024"
 name = "black_pill_template"
 version = "0.1.0"
 
+[features]
+default = ["vlf4r2"]
+vlf4r1 = []
+vlf4r2 = []
+
 [dependencies]
 cortex-m = { version = "0.7.7", features = [
     "inline-asm",
@@ -40,6 +45,11 @@ embassy-time = { git = "https://github.com/embassy-rs/embassy.git", features = [
 panic-probe = { version = "1.0.0", features = ["print-defmt"] }
 heapless = "0.9.1"
 embedded-hal-async = { version = "1.0.0", features = ["defmt-03"] }
+nalgebra = { version = "0.34.0", default-features = false, features = [
+    "libm-force",
+] }
+biquad = "0.5.0"
+micromath = "2.1.0"
 
 [[bin]]
 name = "template"
