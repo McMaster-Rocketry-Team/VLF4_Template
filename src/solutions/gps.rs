@@ -97,7 +97,7 @@ async fn nmea_task(
                     }
                     sentence.push(buffer[i] as char).ok();
 
-                    if buffer[i] == 10u8 || sentence.len() == sentence.capacity() {
+                    if buffer[i] == b'\n' || sentence.len() == sentence.capacity() {
                         let parse_result = nmea.parse(sentence.as_str());
 
                         if let Err(e) = parse_result {
