@@ -15,8 +15,6 @@ use embassy_stm32::peripherals::{EXTI5, PA0, PA1, PB5, UART4};
 use embassy_stm32::peripherals::{EXTI12, PA2, PA3, PD12, USART2};
 use embassy_stm32::usart::{BufferedUart, Config as UartConfig};
 use embassy_stm32::{Peri, bind_interrupts, usart};
-use embassy_sync::blocking_mutex::raw::NoopRawMutex;
-use embassy_sync::signal::Signal;
 use embedded_io_async::Read;
 
 use {defmt_rtt as _, panic_probe as _};
@@ -37,15 +35,13 @@ async fn main(spawner: Spawner) {
     #[cfg(feature = "vlf4r2")]
     let led = Output::new(p.PD10, Level::Low, Speed::Low);
 
-    let nmea_unix_time_signal = singleton!(: Signal::<NoopRawMutex, i64> = Signal::new()).unwrap();
-
     #[cfg(feature = "vlf4r1")]
-    spawner.spawn(nmea_task(p.UART4, p.PA1, p.PA0, nmea_unix_time_signal).unwrap());
+    spawner.spawn(nmea_task(p.UART4, p.PA1, p.PA0).unwrap());
     #[cfg(feature = "vlf4r2")]
     spawner.spawn(nmea_task(p.USART2, p.PA3, p.PA2, nmea_unix_time_signal).unwrap());
 
     #[cfg(feature = "vlf4r1")]
-    spawner.spawn(pps_task(led, p.PB5, p.EXTI5, nmea_unix_time_signal).unwrap());
+    spawner.spawn(pps_task(led, p.PB5, p.EXTI5).unwrap());
     #[cfg(feature = "vlf4r2")]
     spawner.spawn(pps_task(led, p.PD12, p.EXTI12, nmea_unix_time_signal).unwrap());
 }
@@ -60,8 +56,6 @@ async fn nmea_task(
 
     #[cfg(feature = "vlf4r1")] tx: Peri<'static, PA0>,
     #[cfg(feature = "vlf4r2")] tx: Peri<'static, PA2>,
-
-    nmea_unix_time_signal: &'static Signal<NoopRawMutex, i64>,
 ) {
     #[cfg(feature = "vlf4r1")]
     bind_interrupts!(struct Irqs {
@@ -91,8 +85,6 @@ async fn pps_task(
 
     #[cfg(feature = "vlf4r1")] exti: Peri<'static, EXTI5>,
     #[cfg(feature = "vlf4r2")] exti: Peri<'static, EXTI12>,
-
-    nmea_unix_time_signal: &'static Signal<NoopRawMutex, i64>,
 ) {
     let mut pps = ExtiInput::new(pin, exti, Pull::None);
 }

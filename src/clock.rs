@@ -1,4 +1,3 @@
-use defmt::info;
 use embassy_stm32::{Config, Peri};
 use embassy_stm32::adc::{Adc, AdcChannel, SampleTime};
 use embassy_stm32::peripherals::{ADC1, PC4};

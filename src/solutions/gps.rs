@@ -18,7 +18,7 @@ use embassy_stm32::usart::{BufferedUart, Config as UartConfig};
 use embassy_stm32::{Peri, bind_interrupts, usart};
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::signal::Signal;
-use embassy_time::Timer;
+use embassy_time::{Duration, Instant, Timer};
 use embedded_io_async::Read;
 use heapless::String;
 use nmea::Nmea;
@@ -43,7 +43,8 @@ async fn main(spawner: Spawner) {
     #[cfg(feature = "vlf4r2")]
     let led = Output::new(p.PD10, Level::Low, Speed::Low);
 
-    let nmea_unix_time_signal = singleton!(: Signal::<NoopRawMutex, i64> = Signal::new()).unwrap();
+    let nmea_unix_time_signal =
+        singleton!(: Signal::<NoopRawMutex, (Instant, i64)> = Signal::new()).unwrap();
 
     #[cfg(feature = "vlf4r1")]
     spawner.spawn(nmea_task(p.UART4, p.PA1, p.PA0, nmea_unix_time_signal).unwrap());
@@ -67,7 +68,7 @@ async fn nmea_task(
     #[cfg(feature = "vlf4r1")] tx: Peri<'static, PA0>,
     #[cfg(feature = "vlf4r2")] tx: Peri<'static, PA2>,
 
-    nmea_unix_time_signal: &'static Signal<NoopRawMutex, i64>,
+    nmea_unix_time_signal: &'static Signal<NoopRawMutex, (Instant, i64)>,
 ) {
     #[cfg(feature = "vlf4r1")]
     bind_interrupts!(struct Irqs {
@@ -117,7 +118,7 @@ async fn nmea_task(
                         {
                             let datetime = date.and_time(time);
                             let datetime = Utc.from_utc_datetime(&datetime);
-                            nmea_unix_time_signal.signal(datetime.timestamp());
+                            nmea_unix_time_signal.signal((Instant::now(), datetime.timestamp()));
                         }
 
                         sentence.clear();
@@ -144,13 +145,15 @@ async fn pps_task(
     #[cfg(feature = "vlf4r1")] exti: Peri<'static, EXTI5>,
     #[cfg(feature = "vlf4r2")] exti: Peri<'static, EXTI12>,
 
-    nmea_unix_time_signal: &'static Signal<NoopRawMutex, i64>,
+    nmea_unix_time_signal: &'static Signal<NoopRawMutex, (Instant, i64)>,
 ) {
     let mut pps = ExtiInput::new(pin, exti, Pull::None);
 
     loop {
         pps.wait_for_rising_edge().await;
-        if let Some(unix_time) = nmea_unix_time_signal.try_take() {
+        if let Some((instant, unix_time)) = nmea_unix_time_signal.try_take()
+            && Instant::now() - instant < Duration::from_millis(800)
+        {
             info!("Unix timestamp: {}", unix_time + 1);
             led.set_high();
             Timer::after_millis(200).await;

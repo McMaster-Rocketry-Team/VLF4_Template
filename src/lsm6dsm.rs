@@ -1,6 +1,5 @@
 use embassy_time::Timer;
-use embedded_hal_async::spi::Error;
-use embedded_hal_async::spi::{ErrorKind, SpiDevice};
+use embedded_hal_async::spi::SpiDevice;
 
 const WHO_AM_I: u8 = 0x0F;
 const CTRL1_XL: u8 = 0x10;
@@ -8,8 +7,6 @@ const CTRL2_G: u8 = 0x11;
 const CTRL3_C: u8 = 0x12;
 const CTRL4_C: u8 = 0x13;
 const CTRL6_C: u8 = 0x15;
-const DRDY_PULSE_CFG: u8 = 0x0B;
-const INT1_CTRL: u8 = 0x0D;
 const OUTX_L_G: u8 = 0x22;
 
 pub struct LSM6DSM<B: SpiDevice> {
